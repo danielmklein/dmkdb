@@ -10,11 +10,16 @@ from DataLoader import DataLoader
 from Table import Table
 from Database import Database
 
+DATA_DIR = "data"
+INPUT_FILENAME = "input.txt"
+OUTPUT_FILENAME = "results.txt"
+
 def main():
-    data_dir = "data"
+    database = DataLoader(DATA_DIR).load()
 
-    database = DataLoader(data_dir).load()
+    print("num tables: {0}".format(len(database.tables)))
 
+    return 0;
 
 
 

@@ -22,7 +22,7 @@ class DataLoader(object):
     Parses data files, builds tables and builds and returns database.
     '''
     def load(self):
-        print("load() was called. cool.")
+        print("loading data from files into db")
         
         db = Database()
         
@@ -53,21 +53,14 @@ class DataLoader(object):
  
                     for elem_num in range(1, len(elems)):
                         col_name = table_name + str(elem_num+1)
+                        print("adding col {0} with key {1} and value {2}"
+                              .format(col_name, elems[0], elems[elem_num]))
                         new_table.add_value(col_name, elems[0], elems[elem_num])                    
                 
-            print(new_table.columns)
+            #print(new_table.columns)
 
             db.add_table(new_table)
 
-                    
-
-        '''
-        TODO:
-        get table name from filename
-        create column names from table name + numbers 1-n
-        read each line of file, put key value in keys list of table,
-        put other vals in columns dict under proper column and key
-        '''
+        return db
 
 
-        return 5
