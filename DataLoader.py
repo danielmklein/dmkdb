@@ -11,6 +11,8 @@ import re
 from Table import Table
 from Database import Database
 
+TIMESTAMP_COL_NAME = 'TS'
+
 class DataLoader(object):
     
     def __init__(self, data_dir):
@@ -23,7 +25,7 @@ class DataLoader(object):
     '''
     def load(self):
         print("loading data from files into db")
-        
+        timestamp = 0
         db = Database()
         
         for file_name in os.listdir(self.data_dir):
@@ -41,21 +43,35 @@ class DataLoader(object):
                     elems = line.split()
                     
                     if (first_line): # name the columns from the filename plus numbering
-                        num_columns = len(elems)
-                        for i in range(1, num_columns+1):
+                        num_columns = len(elems) + 1
+                        for i in range(1, num_columns):
                             new_table.add_column_name(table_name + str(i))
+
+                        new_table.add_column_name(TIMESTAMP_COL_NAME)
+
                         print(new_table.column_names)
                         first_line = False
 
                     #print(elems)
 
+                    # add the primary key
                     new_table.add_key(elems[0]) # first column value is pk
  
+                    # add the new row
                     for elem_num in range(1, len(elems)):
                         col_name = table_name + str(elem_num+1)
                         print("adding col {0} with key {1} and value {2}"
                               .format(col_name, elems[0], elems[elem_num]))
-                        new_table.add_value(col_name, elems[0], elems[elem_num])                    
+
+                        new_table.add_value(col_name, elems[0], elems[elem_num])
+                      
+                    # add the timestamp for the new row  
+                    print("adding col {0} with key {1} and value {2}"
+                          .format(TIMESTAMP_COL_NAME, elems[0], timestamp))
+
+                    new_table.add_value(TIMESTAMP_COL_NAME, elems[0], timestamp)
+                    timestamp += 1
+                                      
                 
             #print(new_table.columns)
 
