@@ -5,10 +5,11 @@ class QueryExecutor(object):
     def __init__(self, db):
         self.db = db
 
-    def parse_query(self, query):
-        pass
-
     def perform_query(self, query):
+        query_params = parse_query(query) # (columns, table, conditions, order_by)
+
+
+    def parse_query(self, query):
         #print("QueryExecutor.perform_query() called with query: {0}".format(query))
 
         ''' okay, what do we do here?
@@ -44,5 +45,8 @@ class QueryExecutor(object):
             print("order by: {0}".format(order_by))
 
         print()
+
+        return (columns, table, conditions, order_by)
+
 
 
