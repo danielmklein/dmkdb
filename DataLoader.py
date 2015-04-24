@@ -33,7 +33,7 @@ class DataLoader(object):
 
             new_table = Table(table_name)
 
-            print("table name is: {0}".format(table_name))
+            #print("table name is: {0}".format(table_name))
             
             full_path = os.path.join(self.data_dir, file_name)
             with open(full_path, 'r') as data_file:
@@ -43,33 +43,27 @@ class DataLoader(object):
                     elems = line.split()
                     
                     if (first_line): # name the columns from the filename plus numbering
+                        new_table.add_column_name(TIMESTAMP_COL_NAME)
                         num_columns = len(elems) + 1
                         for i in range(1, num_columns):
                             new_table.add_column_name(table_name + str(i))
 
-                        new_table.add_column_name(TIMESTAMP_COL_NAME)
-
-                        print(new_table.column_names)
+                        #print(new_table.column_names)
                         first_line = False
 
                     #print(elems)
 
                     # add the primary key
-                    new_table.add_key(elems[0]) # first column value is pk
+                    new_table.add_key(timestamp) # we're actually gonna use ts as pk
  
                     # add the new row
-                    for elem_num in range(1, len(elems)):
+                    for elem_num in range(0, len(elems)):
                         col_name = table_name + str(elem_num+1)
-                        print("adding col {0} with key {1} and value {2}"
-                              .format(col_name, elems[0], elems[elem_num]))
+                        #print("adding col {0} with key {1} and value {2}"
+                        #      .format(col_name, timestamp, elems[elem_num]))
 
-                        new_table.add_value(col_name, elems[0], elems[elem_num])
-                      
-                    # add the timestamp for the new row  
-                    print("adding col {0} with key {1} and value {2}"
-                          .format(TIMESTAMP_COL_NAME, elems[0], timestamp))
+                        new_table.add_value(col_name, timestamp, elems[elem_num])
 
-                    new_table.add_value(TIMESTAMP_COL_NAME, elems[0], timestamp)
                     timestamp += 1
                                       
                 

@@ -31,8 +31,8 @@ def main():
     with open(OUTPUT_FILENAME, 'w') as output_file:
         writer = ResultWriter(output_file)
         for query in queries:
-            clean_query = query.replace('\n', ' ').strip()
-            print(clean_query)
+            clean_query = query.replace('\n', ' ').strip() + ";"
+            print("QUERY: {0}".format(clean_query))
             
             result = executor.perform_query(clean_query)
 

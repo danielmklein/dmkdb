@@ -6,4 +6,5 @@ class ResultWriter(object):
         self.output = output
 
     def write_result(self, result):
-        print("ResultWriter.write_result() called!")
+        #print("ResultWriter.write_result() called!")
+        pass
