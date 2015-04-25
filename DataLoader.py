@@ -52,22 +52,21 @@ class DataLoader(object):
                         first_line = False
 
                     #print(elems)
-
-                    # add the primary key
-                    new_table.add_key(timestamp) # we're actually gonna use ts as pk
  
+                    new_table.add_value(timestamp, TIMESTAMP_COL_NAME, timestamp)
                     # add the new row
                     for elem_num in range(0, len(elems)):
                         col_name = table_name + str(elem_num+1)
                         #print("adding col {0} with key {1} and value {2}"
                         #      .format(col_name, timestamp, elems[elem_num]))
 
-                        new_table.add_value(col_name, timestamp, elems[elem_num])
+                        new_table.add_value(timestamp, col_name, elems[elem_num])
 
                     timestamp += 1
                                       
                 
-            #print(new_table.columns)
+            for key in new_table.rows.keys():
+                print(new_table.rows[key])
 
             db.add_table(new_table)
 

@@ -34,9 +34,9 @@ def main():
             clean_query = query.replace('\n', ' ').strip() + ";"
             print("QUERY: {0}".format(clean_query))
             
-            result = executor.perform_query(clean_query)
+            (col_names, rows) = executor.perform_query(clean_query)
 
-            writer.write_result(result)
+            writer.write_result(col_names, rows)
 
     return 0;
 

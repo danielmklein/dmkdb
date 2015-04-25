@@ -12,12 +12,10 @@ class Table(object):
     def __init__(self, table_name):
         self.name = table_name
         self.column_names = []
-        self.keys = []
     
-        # columns consists of dicts, each dict has key of a column name,
-        # value of dict of pk-columnvalue key-value pairs.
-        # for example: columns = {a1:{1:5, 4:67, 54, 99}, a2:{1:90, 6:75}}.
-        self.columns = {}
+        # each row is keyed on TS, contains dict containing
+        # col name-data val pairs
+        self.rows = {} 
 
    
     def add_column_name(self, col):
@@ -27,22 +25,17 @@ class Table(object):
         return
 
 
-    def add_key(self, key):
-        if (key not in self.keys):
-            self.keys.append(key)
-        
-        return
-
-
-    def add_value(self, col_name, key, value):
+    def add_value(self, key, col_name, value):
         # if column name dict not in column_names, add it
         # then, add val at columns[key]
+        
         if (col_name not in self.column_names):
-            raise Exception("invalid column name")
+            raise Exception("invalid column name.")
 
-        if (col_name not in self.columns):
-            self.columns[col_name] = {}
+        if (key not in self.rows):
+            self.rows[key] = {}
+        
+        self.rows[key][col_name] = value
 
-        self.columns[col_name][key] = value
         
         
