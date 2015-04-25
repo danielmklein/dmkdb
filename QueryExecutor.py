@@ -89,7 +89,7 @@ class QueryExecutor(object):
 
         # project the columns we want
         print("we want columns: {0}".format(col_names))
-        for col in col_names:
+        for col in col_names: # TODO: MAKE SURE WE DO AVG!!
             if (col not in data_table.column_names):
                 raise Exception("invalid column name: {0}".format(col))
 
