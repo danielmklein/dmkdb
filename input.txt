@@ -1,6 +1,6 @@
 SELECT *
 FROM A
-WHERE A2 >= 175;
+WHERE (((A2 >= 175) and (A1 > 99)) or (A1 < 90));
 
 SELECT A1, TS FROM A WHERE A1 = 22;
 

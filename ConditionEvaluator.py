@@ -19,7 +19,8 @@ class ConditionEvaluator(object):
                 '>=':lambda left, right: left >= right,
                 '(':'(',
                 ')':')'}
-        self.empty_res = True
+
+    # end __init__
 
 
     def evaluate_condition(self, row, condition):
@@ -33,9 +34,14 @@ class ConditionEvaluator(object):
 
         for expr in simple_exprs:
             result = self.simple_eval(row, expr)
-            condition = condition.replace(expr, result)
+            if "(" in condition:
+                condition = condition.replace("(" + expr + ")", result)
+            else:
+                condition = condition.replace(expr, result)
         print("condition is now {}".format(condition))
-        return self.nested_bool_eval(condition)
+        return self.eval_bool_expr(condition)
+    # end evaluate_condition
+
 
     def simple_eval(self, row, expression):
         match = re.search(r"(\w+)\s?([=<>]+)\s?(\d+)", expression)
@@ -57,71 +63,86 @@ class ConditionEvaluator(object):
         else:
             print("{} {} {} is FALSE".format(col_val, op, val))
             return 'False'
-        
+    # end simple_eval
 
 
+    def build_token_list(self, expr_string):
+        '''
+        space things out nicely, then convert plain old strings
+        into real Python tokens (True, False, or, and, etc)
+        '''
+        expr_string = expr_string.replace('(', ' ( ')
+        expr_string = expr_string.replace(')', ' ) ')
+        print("expr string is now: {}".format(expr_string))
+        token_list = [self.str_to_token[item] for item in expr_string.split()]
+        print("token string is: {}".format(expr_string.split()))
 
-    def create_token_lst(self, s):
-        """create token list:
-        'True or False' -> [True, lambda..., False]"""
-        s = s.replace('(', ' ( ')
-        s = s.replace(')', ' ) ')
-
-        return [self.str_to_token[it] for it in s.split()]
+        return token_list
+   # end build_token_list
 
 
-    def find(self, lst, what, start=0):
-        return [i for i,it in enumerate(lst) if it == what and i >= start]
+    def find(self, token_list, token, start=0):
+        '''
+        given a token, return the indices at which that 
+        token appears in the given token list
+        '''
+        return [i for i, item in enumerate(token_list) if item == token and i >= start]
+    # end find
 
 
-    def parens(self, token_lst):
-        """returns:
+    def find_parens(self, token_list):
+        '''
+        returns:
         (bool)parens_exist, left_paren_pos, right_paren_pos
-        """
-        left_lst = self.find(token_lst, '(')
+        '''
+        left_list = self.find(token_list, '(')
 
-        if not left_lst:
+        if not left_list:
             return False, -1, -1
 
-        left = left_lst[-1]
+        left = left_list[-1]
 
-        #can not occur earlier, hence there are args and op.
-        right = self.find(token_lst, ')', left + 4)[0]
+        # cannot occur earlier, hence there are args and op.
+        right = self.find(token_list, ')', left + 2)[0]
 
         return True, left, right
+    # end find_parens
 
 
-    def bool_eval(self, token_lst):
-        """token_lst has length 3 and format: [left_arg, operator, right_arg]
-        operator(left_arg, right_arg) is returned"""
-        return token_lst[1](token_lst[0], token_lst[2])
+    def eval_simple_expr(self, token_list):
+        '''
+        token_list has length 3 and format: [left_arg, operator, right_arg]
+        operator(left_arg, right_arg) is returned
+        '''
+        return token_list[1](token_list[0], token_list[2])
+    # end eval_simple_expr
 
 
-    def formatted_bool_eval(self, token_lst):
-        """eval a formatted (i.e. of the form 'ToFa(ToF)') string"""
-        if not token_lst:
-            return self.empty_res
+    def eval_formatted_expr(self, token_list, emp_res=True):
+        '''
+        eval a formatted (i.e. of the form 'ToFa(ToF)') string
+        '''
+        if not token_list:
+            return emp_res
 
-        if len(token_lst) == 1:
-            return token_lst[0]
+        if len(token_list) == 1:
+            return token_list[0]
 
-        has_parens, l_paren, r_paren = self.parens(token_lst)
+        has_parens, l_paren, r_paren = self.find_parens(token_list)
 
         if not has_parens:
-            return self.bool_eval(token_lst)
+            return self.eval_simple_expr(token_list)
 
-        token_lst[l_paren:r_paren + 1] = [self.bool_eval(token_lst[l_paren+1:r_paren])]
+        token_list[l_paren:r_paren + 1] = [self.eval_simple_expr(token_list[l_paren+1:r_paren])]
 
-        return self.formatted_bool_eval(token_lst, bool_eval)
+        return self.eval_formatted_expr(token_list, self.eval_simple_expr)
+    # end formatted_bool_eval
 
 
-    def nested_bool_eval(self, s):
-        """The actual 'eval' routine,
-        if 's' is empty, 'True' is returned,
-        otherwise 's' is evaluated according to parentheses nesting.
-        The format assumed:
-        [1] 'LEFT OPERATOR RIGHT',
-        where LEFT and RIGHT are either:
-                True or False or '(' [1] ')' (subexpression in parentheses)
-        """
-        return self.formatted_bool_eval(self.create_token_lst(s))
+    def eval_bool_expr(self, s):
+        '''
+        the function that evaluates a logical expression string
+        '''
+        return self.eval_formatted_expr(self.build_token_list(s))
+    # end nested_bool_eval
+
