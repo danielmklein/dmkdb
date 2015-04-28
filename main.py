@@ -22,7 +22,7 @@ def main():
     print("**************************************************")
     print("****             Daniel Klein                 ****")
     print("****                CS 457                    ****")
-    print("****                Final Project             ****")
+    print("****             Final Project                ****")
     print("**************************************************")
     print("**************************************************")
     print("**** Initializing database from data files... ****")
