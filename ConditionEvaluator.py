@@ -1,7 +1,11 @@
-# http://stackoverflow.com/questions/2467590/dynamically-evaluating-simple-boolean-logic-in-python
-# adapt this for evaluating these expressions
-# given a row, loop through it, replacing each inequality/equality with 'True' or 'False'
-# then evaluate it with the code from above.
+'''
+This class takes care of evaluating logical expressions from database queries.
+Given a row and a condition, evaluate_condition will return whether or not that
+row meets the condition. This is for the CS 457 Final Project.
+
+Daniel Klein
+Spring 2015
+'''
 import re
 
 class ConditionEvaluator(object):
@@ -19,7 +23,6 @@ class ConditionEvaluator(object):
                 '>=':lambda left, right: left >= right,
                 '(':'(',
                 ')':')'}
-
     # end __init__
 
 
@@ -29,21 +32,34 @@ class ConditionEvaluator(object):
         replace each one with 'True' or 'False' STRINGS, then evaluate resulting string 
         with nested_bool_eval
         '''
-        simple_exprs = re.findall(r"\w+\s?[=<>]+\s?\d+", condition)
-        print("condition starts out as: {}".format(condition))
+        simple_exprs = re.findall(r"\(?\w+\s?[=<>]+\s?\d+\)?", condition)
 
         for expr in simple_exprs:
-            result = self.simple_eval(row, expr)
-            if "(" in condition:
-                condition = condition.replace("(" + expr + ")", result)
+            if "(" in expr:
+                trimmed_expr = expr.replace("(", "")
+                trimmed_expr = trimmed_expr.replace(")", "")
             else:
-                condition = condition.replace(expr, result)
-        print("condition is now {}".format(condition))
+                trimmed_expr = expr
+
+            if ("(" in expr) and not (")" in expr):
+                expr = expr.replace("(", "")
+            if (")" in expr) and not ("(" in expr):
+                expr = expr.replace(")", "")
+
+            result = self.simple_eval(row, trimmed_expr)
+
+            condition = condition.replace(expr, result)
+
         return self.eval_bool_expr(condition)
     # end evaluate_condition
 
 
     def simple_eval(self, row, expression):
+        '''
+        given a simple expression of the form COLNAME OPERATOR VALUE,
+        we return a string 'True'/'False' result
+        '''
+
         match = re.search(r"(\w+)\s?([=<>]+)\s?(\d+)", expression)
 
         if not match:
@@ -52,16 +68,19 @@ class ConditionEvaluator(object):
         col_name = match.group(1).strip()
         op = match.group(2).strip()
         val = int(match.group(3).strip())
-        #print ("col, op, val: {}, {}, {}".format(col_name, op, val))
 
+        if (col_name not in row.keys()):
+            raise Exception("Invalid column name in: {}".format(expression))
+
+        # convert the string operator into a real Python operator
         real_op = self.str_to_token[op]
         col_val = int(row[col_name])
 
+        # since we converted the operator to a Python operator,
+        # we can call it like a function to evaluate the condition now
         if (real_op(col_val, val)):
-            print("{} {} {} is TRUE".format(col_val, op, val))
             return 'True'
         else:
-            print("{} {} {} is FALSE".format(col_val, op, val))
             return 'False'
     # end simple_eval
 
@@ -73,9 +92,7 @@ class ConditionEvaluator(object):
         '''
         expr_string = expr_string.replace('(', ' ( ')
         expr_string = expr_string.replace(')', ' ) ')
-        print("expr string is now: {}".format(expr_string))
         token_list = [self.str_to_token[item] for item in expr_string.split()]
-        print("token string is: {}".format(expr_string.split()))
 
         return token_list
    # end build_token_list
@@ -84,7 +101,7 @@ class ConditionEvaluator(object):
     def find(self, token_list, token, start=0):
         '''
         given a token, return the indices at which that 
-        token appears in the given token list
+        token first appears in the given token list
         '''
         return [i for i, item in enumerate(token_list) if item == token and i >= start]
     # end find
@@ -100,8 +117,10 @@ class ConditionEvaluator(object):
         if not left_list:
             return False, -1, -1
 
+        # take the last open paren
         left = left_list[-1]
 
+        # find the corresponding close paren
         # cannot occur earlier, hence there are args and op.
         right = self.find(token_list, ')', left + 2)[0]
 
@@ -111,8 +130,8 @@ class ConditionEvaluator(object):
 
     def eval_simple_expr(self, token_list):
         '''
-        token_list has length 3 and format: [left_arg, operator, right_arg]
-        operator(left_arg, right_arg) is returned
+        token_list[1] will be either AND or OR, which we can evaluate
+        as a function on the two operands, which will each be either True or False
         '''
         return token_list[1](token_list[0], token_list[2])
     # end eval_simple_expr
@@ -120,7 +139,7 @@ class ConditionEvaluator(object):
 
     def eval_formatted_expr(self, token_list, emp_res=True):
         '''
-        eval a formatted (i.e. of the form 'ToFa(ToF)') string
+        this recursively evaluates an expression that has been properly formatted
         '''
         if not token_list:
             return emp_res
@@ -145,4 +164,5 @@ class ConditionEvaluator(object):
         '''
         return self.eval_formatted_expr(self.build_token_list(s))
     # end nested_bool_eval
+
 

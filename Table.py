@@ -15,7 +15,7 @@ class Table(object):
     
         # each row is keyed on TS, contains dict containing
         # col name-data val pairs
-        self.rows = {} 
+        self.rows = {}
 
    
     def add_column_name(self, col):
@@ -23,19 +23,20 @@ class Table(object):
             self.column_names.append(col)
 
         return
+    # end add_column_name
 
 
-    def add_value(self, key, col_name, value):
-        # if column name dict not in column_names, add it
-        # then, add val at columns[key]
-        
+    def add_value(self, key, col_name, value):  
         if (col_name not in self.column_names):
-            raise Exception("invalid column name.")
+            raise Exception("Invalid column name.")
 
         if (key not in self.rows):
             self.rows[key] = {}
         
         self.rows[key][col_name] = value
+  
+        return
+    # end add_value
 
         
         
